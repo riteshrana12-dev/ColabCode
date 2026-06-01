@@ -250,4 +250,91 @@ const signIn = async (req: Request, res: Response) => {
   }
 };
 
-export default { signup, verifyEmail, signIn };
+//---- refresh----//
+
+const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return res.status(401).json({
+        message: "Refresh Token is not found",
+      });
+    }
+
+    const decode = jwt.verify(refreshToken, process.env.JWT_SECRET as string);
+    const { id } = decode as decodeidI;
+
+    const session = await client.session.findFirst({
+      where: {
+        userId: id,
+        revoked: false,
+      },
+    });
+
+    if (!session) {
+      return res.status(401).json({
+        message: "session not found",
+      });
+    }
+    const isMatch = await bcrypt.compare(
+      refreshToken,
+      session.refreshTokenHash,
+    );
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Invalid refresh token",
+      });
+    }
+
+    const accessToken = jwt.sign(
+      {
+        id: id,
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "10m",
+      },
+    );
+
+    const newrefreshToken = jwt.sign(
+      {
+        id: id,
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "10d",
+      },
+    );
+
+    const newHashRefreshToken = await bcrypt.hash(newrefreshToken, 10);
+
+    await client.session.update({
+      where: {
+        id: session.id,
+      },
+      data: {
+        refreshTokenHash: newHashRefreshToken,
+      },
+    });
+
+    res.cookie("refreshToken", newrefreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      message: "Access token refreshed successfully",
+      accessToken,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal Server error",
+      error: error.message,
+    });
+  }
+};
+
+export default { signup, verifyEmail, signIn, refreshToken };
