@@ -107,6 +107,7 @@ const signup = async (req: Request, res: Response) => {
   }
 };
 
+//---- verify email----//
 const verifyEmail = async (req: Request, res: Response) => {
   const { email, otp } = req.body;
   try {
@@ -383,4 +384,55 @@ const logOut = async (req: Request, res: Response) => {
   }
 };
 
-export default { signup, refreshToken, logOut, signIn, verifyEmail };
+//---- logoutAll----//
+
+const logOutAll = async (req: Request, res: Response) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return res.status(400).json({
+        message: "Refresh Token not found",
+      });
+    }
+
+    const decode = jwt.decode(refreshToken);
+
+    const { id } = decode as decodeidI;
+
+    const session = await client.session.findMany({
+      where: {
+        userId: id,
+        revoked: false,
+      },
+    });
+
+    if (!session) {
+      return res.status(400).json({
+        message: "Invalid refresh token",
+      });
+    }
+
+    await client.session.updateMany({
+      where: {
+        userId: id,
+        revoked: false,
+      },
+      data: {
+        revoked: true,
+      },
+    });
+
+    res.clearCookie("refreshToken");
+
+    return res.status(200).json({
+      message: "successfully logout from all device",
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal Server error",
+      error: error.message,
+    });
+  }
+};
+
+export default { signup, verifyEmail, signIn, refreshToken, logOut, logOutAll };
