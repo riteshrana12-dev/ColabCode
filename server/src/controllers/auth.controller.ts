@@ -172,4 +172,82 @@ const verifyEmail = async (req: Request, res: Response) => {
   }
 };
 
-export default { signup, verifyEmail };
+//---- sign in----//
+const signIn = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await client.user.findFirst({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "user not found",
+      });
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+
+    if (!isValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect password",
+      });
+    }
+
+    const refreshToken = jwt.sign(
+      {
+        id: user.id,
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "10d",
+      },
+    );
+
+    const hashedRefresh = await bcrypt.hash(refreshToken, 10);
+
+    const session = await client.session.create({
+      data: {
+        refreshTokenHash: hashedRefresh,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        userId: user.id,
+      },
+    });
+
+    const accessToken = jwt.sign(
+      {
+        id: user.id,
+        sessionId: session.id,
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "10m",
+      },
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      message: "sign in successfull",
+      user,
+      accessToken,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+export default { signup, verifyEmail, signIn };
