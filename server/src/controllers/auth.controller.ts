@@ -337,4 +337,50 @@ const refreshToken = async (req: Request, res: Response) => {
   }
 };
 
-export default { signup, verifyEmail, signIn, refreshToken };
+//---- logout----//
+
+const logOut = async (req: Request, res: Response) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return res.status(400).json({
+        message: "Refresh token not found",
+      });
+    }
+
+    const decode = jwt.decode(refreshToken);
+    const { id } = decode as decodeidI;
+
+    const session = await client.session.findFirst({
+      where: {
+        userId: id,
+        revoked: false,
+      },
+    });
+
+    if (!session) {
+      return res.status(400).json({
+        message: "Invalid Refresh Token",
+      });
+    }
+
+    await client.session.update({
+      where: {
+        id: session.id,
+      },
+      data: {
+        revoked: true,
+      },
+    });
+
+    res.clearCookie("refreshToken");
+
+    return res.json();
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export default { signup, refreshToken, logOut, signIn, verifyEmail };
