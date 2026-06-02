@@ -15,9 +15,11 @@ model User {
   verified   Boolean @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  session   Session[]
-  otp       Otp[]
+  
+  roomId     String?
+  room       Room? @relation(fields: [roomId], references: [id])
+  session    Session[]
+  otp        Otp[]
 }
 
 model Session {
@@ -41,4 +43,14 @@ model Otp {
 
   userId    String
   user      User @relation(fields:[userId],references:[id])
+}
+
+model Room {
+  id          String @id @default(uuid())
+  name        String 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  users       User[]
+
 }
