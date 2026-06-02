@@ -81,5 +81,28 @@ const joinRoom = async (req: Request, res: Response) => {
     });
   }
 };
+const leaveRoom = async (req: Request, res: Response) => {
+  const userId = req.userId;
 
-export default { createRoom, joinRoom };
+  try {
+    await client.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        roomId: null,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Left room successfully",
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+export default { createRoom, joinRoom, leaveRoom };
