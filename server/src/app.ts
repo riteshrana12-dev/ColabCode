@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import helmet from "helmet";
 import authRouter from "./routes/auth.route";
+import roomRouter from "./routes/room.route";
 
 const app = express();
 
@@ -22,5 +23,6 @@ app.use(morgan("dev"));
 app.use(cookieParser());
 
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/room", roomRouter);
 
 export default app;
