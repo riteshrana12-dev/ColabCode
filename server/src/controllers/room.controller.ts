@@ -72,6 +72,49 @@ const deleteRoom = async (req: Request, res: Response) => {
   }
 };
 
+const renameRoom = async (req: Request, res: Response) => {
+  const { roomId, newName } = req.body;
+  const userId = req.userId;
+
+  try {
+    const room = await client.room.findUnique({
+      where: {
+        id: roomId,
+      },
+    });
+
+    if (!room) {
+      return res.status(404).json({
+        message: "Room not found",
+      });
+    }
+
+    if (room.creatorId !== userId) {
+      return res.status(403).json({
+        message: "You are not the creator of this room",
+      });
+    }
+
+    await client.room.update({
+      where: {
+        id: roomId,
+      },
+      data: {
+        name: newName,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Room renamed successfully",
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const joinRoom = async (req: Request, res: Response) => {
   const { iniviteCode } = req.body;
   const userId = req.userId;
@@ -168,4 +211,4 @@ const leaveRoom = async (req: Request, res: Response) => {
   }
 };
 
-export default { createRoom, deleteRoom, joinRoom, leaveRoom };
+export default { createRoom, deleteRoom, renameRoom, joinRoom, leaveRoom };
