@@ -16,8 +16,8 @@ model User {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   
-  roomId     String?
-  room       Room? @relation(fields: [roomId], references: [id])
+  createdRooms Room[] 
+  memberships RoomMember[]
   session    Session[]
   otp        Otp[]
 }
@@ -48,9 +48,24 @@ model Otp {
 model Room {
   id          String @id @default(uuid())
   name        String 
+  inviteCode  String @unique  @default(cuid())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  users       User[]
+  creatorId   String
+  creator     User @relation(fields: [creatorId], references: [id])
+  members     RoomMember[]
+}
+
+model RoomMember {
+  id   String @id @default(uuid())
+  joinedAt DateTime @default(now())
+
+  roomId String
+  userId String
+  room Room @relation(fields:[roomId],references:[id])
+  user User @relation(fields:[userId],references:[id])
+
+  @@unique([roomId, userId], name: "userId_roomId")
 
 }
