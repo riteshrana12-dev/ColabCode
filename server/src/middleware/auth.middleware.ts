@@ -16,10 +16,6 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     req.sessionId = (decode as decodeidI).sessionId;
 
     next();
-
-    return res.status(200).json({
-      message: "Authorized",
-    });
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
