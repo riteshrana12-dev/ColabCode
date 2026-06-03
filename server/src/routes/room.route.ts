@@ -5,6 +5,7 @@ import roomController from "../controllers/room.controller";
 const roomRouter = Router();
 
 roomRouter.post("/create", authMiddleware, roomController.createRoom);
+roomRouter.post("/delete", authMiddleware, roomController.deleteRoom);
 roomRouter.post("/join", authMiddleware, roomController.joinRoom);
 roomRouter.post("/leave", authMiddleware, roomController.leaveRoom);
 
