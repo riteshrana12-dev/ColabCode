@@ -5,17 +5,18 @@ import morgan from "morgan";
 import helmet from "helmet";
 import authRouter from "./routes/auth.route";
 import roomRouter from "./routes/room.route";
+import fileRouter from "./routes/file.route";
 
 const app = express();
 
 // Security middleware
 app.use(helmet());
-// app.use(
-//   cors({
-//     origin: process.env.CLIENT_URL,
-// Credential: true;
-//   }),
-// );
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend dev server
+    credentials: true, // allow cookies/authorization headers
+  }),
+);
 
 // Parsing middlware
 app.use(express.json());
@@ -24,5 +25,6 @@ app.use(cookieParser());
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/room", roomRouter);
+app.use("/api/v1/file", fileRouter);
 
 export default app;
