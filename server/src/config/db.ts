@@ -25,7 +25,7 @@ if (!process.env.REFRESH_TOKEN_G) {
   );
 }
 
-if (!process.env.GOGGLE_USER) {
+if (!process.env.GOOGLE_USER) {
   throw new Error(
     "GOOGLE_USER is defined in environment variables, but it is not used in this file",
   );
@@ -35,6 +35,6 @@ const client = new PrismaClient({
   adapter: new PrismaPg({
     connectionString: process.env.DATABASE_URL,
   }),
-  log: ["query", "info", "warn", "error"],
+  log: ["error"],
 });
 export default client;
