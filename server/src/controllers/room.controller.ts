@@ -27,6 +27,8 @@ const createRoom = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "Room created successfully",
       roomId: room.id,
+      inviteCode: room.inviteCode,
+      room,
     });
   } catch (error: any) {
     return res.status(500).json({
@@ -116,13 +118,13 @@ const renameRoom = async (req: Request, res: Response) => {
 };
 
 const joinRoom = async (req: Request, res: Response) => {
-  const { iniviteCode } = req.body;
+  const { inviteCode } = req.body;
   const userId = req.userId;
 
   try {
     const room = await client.room.findUnique({
       where: {
-        inviteCode: iniviteCode,
+        inviteCode: inviteCode,
       },
     });
 
@@ -160,6 +162,7 @@ const joinRoom = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Joined room successfully",
+      roomId: room.id,
     });
   } catch (error: any) {
     return res.status(500).json({
@@ -211,4 +214,31 @@ const leaveRoom = async (req: Request, res: Response) => {
   }
 };
 
-export default { createRoom, deleteRoom, renameRoom, joinRoom, leaveRoom };
+// room.controller.ts
+const getMyRooms = async (req: Request, res: Response) => {
+  try {
+    const user = await client.user.findUnique({
+      where: { id: req.userId },
+      include: {
+        createdRooms: true,
+        memberships: { include: { room: true } },
+      },
+    });
+
+    return res.status(200).json({
+      createdRooms: user?.createdRooms || [],
+      joinedRooms: user?.memberships.map((m) => m.room) || [],
+    });
+  } catch (error: any) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export default {
+  createRoom,
+  deleteRoom,
+  renameRoom,
+  joinRoom,
+  leaveRoom,
+  getMyRooms,
+};
