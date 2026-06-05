@@ -55,6 +55,7 @@ model Room {
   creatorId   String
   creator     User @relation(fields: [creatorId], references: [id])
   members     RoomMember[]
+  project     File[]
 }
 
 model RoomMember {
@@ -68,4 +69,22 @@ model RoomMember {
 
   @@unique([roomId, userId], name: "userId_roomId")
 
+}
+
+model File{
+  id String @id @default(uuid())
+  name String 
+  type String @default("file")
+  content String @default("")
+  yjsState Bytes? 
+  language String @default("plaintext")
+  createdAt DateTime @default(now())
+  upadatedAt DateTime @updatedAt
+
+  roomId String
+  room Room @relation(fields: [roomId],references: [id], onDelete: Cascade)
+
+  parentId String?
+  parent File? @relation("FileTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children File[]  @relation("FileTree")
 }
