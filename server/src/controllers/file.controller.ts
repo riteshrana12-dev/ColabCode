@@ -78,4 +78,29 @@ const createFile = async (req: Request, res: Response) => {
   }
 };
 
-export default { getFileTree, createFile };
+const deleteFile = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const file = await client.file.findUnique({ where: { id } });
+
+    if (!file) {
+      return res.status(404).json({
+        message: "Not found",
+      });
+    }
+
+    await client.file.delete({ where: { id } });
+
+    return res.status(200).json({
+      message: "Deleted successfully",
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal Server error",
+      error: error.message,
+    });
+  }
+};
+
+export default { getFileTree, createFile, deleteFile };
