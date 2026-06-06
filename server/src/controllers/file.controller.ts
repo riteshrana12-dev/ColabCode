@@ -158,4 +158,44 @@ const renameFile = async (req: Request, res: Response) => {
   }
 };
 
-export default { getFileTree, createFile, deleteFile, renameFile };
+const moveFile = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { parentId } = req.body;
+
+  try {
+    const file = await client.file.findUnique({
+      where: { id },
+    });
+
+    if (!file) {
+      return res.status(404).json({
+        message: "not found",
+      });
+    }
+
+    if (parentId === id) {
+      return res.status(400).json({
+        message: "Cannot move folder into itself",
+      });
+    }
+
+    const updated = await client.file.update({
+      where: { id },
+      data: {
+        parentId: parentId ?? null,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Moved successfully",
+      file: updated,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+export default { getFileTree, createFile, deleteFile, renameFile, moveFile };
