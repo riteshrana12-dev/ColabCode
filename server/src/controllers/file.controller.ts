@@ -103,4 +103,59 @@ const deleteFile = async (req: Request, res: Response) => {
   }
 };
 
-export default { getFileTree, createFile, deleteFile };
+const renameFile = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  try {
+    if (!name || name.trim() === "") {
+      return res.status(400).json({
+        message: "Name is required",
+      });
+    }
+    const file = await client.file.findUnique({
+      where: { id },
+    });
+
+    if (!file) {
+      return res.status(404).json({
+        message: "Not found",
+      });
+    }
+
+    const existing = await client.file.findFirst({
+      where: {
+        roomId: file.roomId,
+        parentId: file.parentId,
+        name,
+        NOT: { id },
+      },
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        message: "Name already exists in this folder",
+      });
+    }
+
+    const updated = await client.file.update({
+      where: { id },
+      data: {
+        name,
+        language: file.type === "file" ? getLanguage(name) : "plaintext",
+      },
+    });
+
+    return res.status(200).json({
+      message: "Renamed successfully",
+      file: updated,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+export default { getFileTree, createFile, deleteFile, renameFile };
