@@ -19,7 +19,7 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     return;
   } catch (error: any) {
     return res.status(401).json({
-      message: "Internal server error",
+      message: "Unauthorized",
       error: error.message,
     });
   }
