@@ -1,6 +1,7 @@
 import { httpServer } from "./http";
 import { initWebSocket } from "./websocket/server";
 import dotenv from "dotenv";
+import { buildRunnerImage } from "./execution/exec.service";
 
 dotenv.config();
 
@@ -8,6 +9,7 @@ dotenv.config();
 
 const start = async () => {
   // init Socket.io (attaches to httpServer internally)
+  await buildRunnerImage();
   await initWebSocket();
 
   const PORT = process.env.PORT || 3000;
