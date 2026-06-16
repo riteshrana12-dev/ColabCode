@@ -233,8 +233,8 @@ const signIn = async (req: Request, res: Response) => {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -291,6 +291,7 @@ const refreshToken = async (req: Request, res: Response) => {
     const accessToken = jwt.sign(
       {
         id: id,
+        sessionId: session.id,
       },
       process.env.JWT_SECRET as string,
       {
@@ -321,8 +322,8 @@ const refreshToken = async (req: Request, res: Response) => {
 
     res.cookie("refreshToken", newrefreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
