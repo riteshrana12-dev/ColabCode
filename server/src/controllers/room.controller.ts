@@ -75,7 +75,8 @@ const deleteRoom = async (req: Request, res: Response) => {
 };
 
 const renameRoom = async (req: Request, res: Response) => {
-  const { roomId, newName } = req.body;
+  const { roomId, newName, roomName } = req.body;
+  const nextName = newName ?? roomName;
   const userId = req.userId;
 
   try {
@@ -102,7 +103,7 @@ const renameRoom = async (req: Request, res: Response) => {
         id: roomId,
       },
       data: {
-        name: newName,
+        name: nextName,
       },
     });
 
