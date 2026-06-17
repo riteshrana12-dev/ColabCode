@@ -64,7 +64,7 @@ model RoomMember {
 
   roomId String
   userId String
-  room Room @relation(fields:[roomId],references:[id])
+  room Room @relation(fields:[roomId],references:[id], onDelete: Cascade)
   user User @relation(fields:[userId],references:[id])
 
   @@unique([roomId, userId], name: "userId_roomId")
