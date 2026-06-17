@@ -61,6 +61,7 @@ const deleteRoom = async (req: Request, res: Response) => {
     await client.room.delete({
       where: {
         id: roomId,
+        creatorId: userId,
       },
     });
     return res.status(200).json({
