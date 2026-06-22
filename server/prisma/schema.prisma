@@ -47,7 +47,7 @@ model Otp {
 
 model Room {
   id          String @id @default(uuid())
-  name        String 
+  name        String @unique
   inviteCode  String @unique  @default(cuid())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
