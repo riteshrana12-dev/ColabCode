@@ -2,11 +2,14 @@ import client from "../config/db";
 import { Request, Response } from "express";
 import buildTree from "../services/buildFile.service";
 import getLanguage from "../utils/language.util";
+import { getFileForUser, getRoomForUser } from "../services/access.service";
 
 const getFileTree = async (req: Request, res: Response) => {
   const { roomId } = req.params;
 
   try {
+    await getRoomForUser(req.userId!, roomId);
+
     const files = await client.file.findMany({
       where: { roomId },
       orderBy: [{ type: "desc" }, { name: "asc" }],
@@ -30,6 +33,8 @@ const createFile = async (req: Request, res: Response) => {
   const { roomId, name, type = "file", parentId = null } = req.body;
 
   try {
+    await getRoomForUser(req.userId!, roomId);
+
     if (!name || name.trim() === "") {
       return res.status(400).json({
         message: "Name is required",
@@ -39,7 +44,7 @@ const createFile = async (req: Request, res: Response) => {
     if (parentId) {
       const parent = await client.file.findUnique({ where: { id: parentId } });
 
-      if (!parent || parent.type !== "folder") {
+      if (!parent || parent.roomId !== roomId || parent.type !== "folder") {
         return res.status(400).json({
           mesasge: "Parent folder not found",
         });
@@ -50,7 +55,7 @@ const createFile = async (req: Request, res: Response) => {
       where: { roomId, parentId, name },
     });
 
-    if (!existing) {
+    if (existing) {
       return res.status(400).json({
         message: `A ${type} with that name already exist`,
       });
@@ -82,7 +87,7 @@ const deleteFile = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const file = await client.file.findUnique({ where: { id } });
+    const file = await getFileForUser(req.userId!, id);
 
     if (!file) {
       return res.status(404).json({
@@ -113,9 +118,7 @@ const renameFile = async (req: Request, res: Response) => {
         message: "Name is required",
       });
     }
-    const file = await client.file.findUnique({
-      where: { id },
-    });
+    const file = await getFileForUser(req.userId!, id);
 
     if (!file) {
       return res.status(404).json({
@@ -125,8 +128,8 @@ const renameFile = async (req: Request, res: Response) => {
 
     const existing = await client.file.findFirst({
       where: {
-        roomId: file.roomId,
-        parentId: file.parentId,
+        roomId: file.data?.roomId,
+        parentId: file.data?.parentId,
         name,
         NOT: { id },
       },
@@ -142,7 +145,7 @@ const renameFile = async (req: Request, res: Response) => {
       where: { id },
       data: {
         name,
-        language: file.type === "file" ? getLanguage(name) : "plaintext",
+        language: file.data?.type === "file" ? getLanguage(name) : "plaintext",
       },
     });
 
@@ -163,9 +166,7 @@ const moveFile = async (req: Request, res: Response) => {
   const { parentId } = req.body;
 
   try {
-    const file = await client.file.findUnique({
-      where: { id },
-    });
+    const file = await getFileForUser(req.userId!, id);
 
     if (!file) {
       return res.status(404).json({
@@ -177,6 +178,33 @@ const moveFile = async (req: Request, res: Response) => {
       return res.status(400).json({
         message: "Cannot move folder into itself",
       });
+    }
+
+    if (parentId) {
+      const parent = await getFileForUser(req.userId!, parentId);
+      if (
+        parent.data?.roomId !== file.data?.roomId ||
+        parent.data?.type !== "folder"
+      ) {
+        return res.status(400).json({
+          message: "Parent folder not found",
+        });
+      }
+
+      let currentParentId = parent.data?.parentId;
+      while (currentParentId) {
+        if (currentParentId === id) {
+          return res.status(400).json({
+            message: "Cannot move folder into one of its children",
+          });
+        }
+
+        const currentParent = await client.file.findUnique({
+          where: { id: currentParentId },
+          select: { parentId: true },
+        });
+        currentParentId = currentParent?.parentId ?? null;
+      }
     }
 
     const updated = await client.file.update({
