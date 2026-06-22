@@ -11,6 +11,17 @@ const createRoom = async (req: Request, res: Response) => {
         message: "Room name is required",
       });
     }
+
+    const existingRoom = await client.room.findUnique({
+      where: { name: roomName.trim(), creatorId: userId },
+    });
+
+    if (existingRoom) {
+      return res.status(401).json({
+        success: false,
+        message: "Room already exist",
+      });
+    }
     const room = await client.room.create({
       data: {
         name: roomName,
