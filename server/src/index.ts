@@ -6,10 +6,7 @@ import { setupSocketHandlers } from "./websocket/server";
 
 dotenv.config();
 
-// create one httpServer from express app
-
 const start = async () => {
-  // init Socket.io (attaches to httpServer internally)
   await buildRunnerImage();
   const io = await initWebSocket();
   setupSocketHandlers(io);
