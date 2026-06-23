@@ -436,4 +436,37 @@ const logOutAll = async (req: Request, res: Response) => {
   }
 };
 
-export default { signup, verifyEmail, signIn, refreshToken, logOut, logOutAll };
+const deleteAccount = async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    console.log(req.userId);
+
+    await client.session.updateMany({
+      where: { userId },
+      data: { revoked: true },
+    });
+
+    await client.user.delete({
+      where: { id: userId },
+    });
+
+    res.clearCookie("refreshToken");
+
+    return res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal Server error",
+      error: error.message,
+    });
+  }
+};
+
+export default {
+  signup,
+  verifyEmail,
+  signIn,
+  refreshToken,
+  logOut,
+  logOutAll,
+  deleteAccount,
+};
