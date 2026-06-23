@@ -9,6 +9,7 @@ interface AuthState {
   setAuth: (user: User, token: string) => void;
   setAccessToken: (token: string) => void;
   logout: () => void;
+  deleteAccount: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -25,11 +26,18 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () =>
         set({ user: null, accessToken: null, isAuthenticated: false }),
+
+      deleteAccount: () =>
+        set({ user: null, accessToken: null, isAuthenticated: false }),
     }),
     {
       name: "auth-storage",
 
-      partialize: (state) => ({ user: state.user }),
+      partialize: (state) => ({
+        user: state.user,
+        accessToken: state.accessToken,
+        isAuthenticated: state.isAuthenticated,
+      }),
     },
   ),
 );
