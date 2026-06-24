@@ -147,7 +147,7 @@ const verifyEmail = async (req: Request, res: Response) => {
       });
     }
 
-    await client.user.update({
+    const verified = await client.user.update({
       where: {
         id: user.id,
       },
@@ -162,9 +162,61 @@ const verifyEmail = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(200).json({
-      message: "Email verified successfully",
-    });
+    if (verified) {
+      const refreshToken = jwt.sign(
+        {
+          id: user.id,
+        },
+        process.env.JWT_SECRET as string,
+        {
+          expiresIn: "10d",
+        },
+      );
+
+      const hashedRefresh = await bcrypt.hash(refreshToken, 10);
+
+      const session = await client.session.create({
+        data: {
+          refreshTokenHash: hashedRefresh,
+          ip: req.ip,
+          userAgent: req.headers["user-agent"],
+          userId: user.id,
+        },
+      });
+
+      const accessToken = jwt.sign(
+        {
+          id: user.id,
+          sessionId: session.id,
+        },
+        process.env.JWT_SECRET as string,
+        {
+          expiresIn: "10m",
+        },
+      );
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.status(200).json({
+        message: "Email verified successfully",
+        user,
+        accessToken,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Verification failed",
+      });
+    }
+
+    // return res.status(200).json({
+    //   message: "Email verified successfully",
+    // });
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal Server Error",
