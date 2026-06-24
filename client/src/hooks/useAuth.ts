@@ -48,9 +48,29 @@ export default function useAuth() {
     }
   };
 
+  const signIn = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      const res = await api.post("/auth/signin", { email, password });
+      setAuth(res.data.user, res.data.accessToken);
+      navigate("/dashboard");
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        setError(error.response?.data?.message || "Something went wrong");
+      } else if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Unexpected error");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     signUp,
     verifyEmail,
+    signIn,
     step,
     loading,
     error,
