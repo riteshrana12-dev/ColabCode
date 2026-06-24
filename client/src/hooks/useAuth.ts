@@ -7,6 +7,7 @@ import { useAuthStore } from "../store/authStore";
 export default function useAuth() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const logOut = useAuthStore((s) => s.logout);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"register" | "verify">("register");
   const [error, setError] = useState("");
@@ -67,10 +68,29 @@ export default function useAuth() {
     }
   };
 
+  const signOut = async () => {
+    try {
+      setLoading(true);
+      await api.post("/auth/logout");
+      logOut();
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        setError(error.response?.data?.message || "Something went wrong");
+      } else if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Unexpected error");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     signUp,
     verifyEmail,
     signIn,
+    signOut,
     step,
     loading,
     error,
