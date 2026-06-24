@@ -42,7 +42,7 @@ model Otp {
   createdAt DateTime @default(now())
 
   userId    String
-  user      User @relation(fields:[userId],references:[id])
+  user      User @relation(fields:[userId],references:[id],onDelete: Cascade)
 }
 
 model Room {
@@ -53,7 +53,7 @@ model Room {
   updatedAt   DateTime @updatedAt
   
   creatorId   String
-  creator     User @relation(fields: [creatorId], references: [id])
+  creator     User @relation(fields: [creatorId], references: [id] , onDelete: Cascade)
   members     RoomMember[]
   project     File[]
 }
