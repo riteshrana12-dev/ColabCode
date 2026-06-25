@@ -94,3 +94,24 @@ export function useWebRTC({
     },
     [socket],
   );
+
+  const joinCall = useCallback(async () => {
+    if (!socket) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+
+      localStreamRef.current = stream;
+      setLocalStream(stream);
+      setInCall(true);
+
+      // tell room we joined the call
+      socket.emit("rtc:join-call", { roomId, userName, color: userColor });
+    } catch (err) {
+      console.error("Failed to get media:", err);
+      alert("Could not access camera/microphone. Check permissions.");
+    }
+  }, [socket, roomId, userName, userColor]);
