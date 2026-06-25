@@ -135,3 +135,55 @@ export default function OutputPanel({
       }),
     );
   };
+
+   // ── Render ─────────────────────────────────────────
+  return (
+    <div className="flex h-full flex-col bg-[#0d1117]">
+      {/* Tabs + Controls */}
+      <div className="flex h-8 shrink-0 items-center justify-between border-b border-white/[0.06] px-2">
+        <div className="flex gap-0.5">
+          <TabBtn
+            active={tab === "output"}
+            onClick={() => setTab("output")}
+            label="Output"
+          />
+          {isHtml && (
+            <TabBtn
+              active={tab === "preview"}
+              onClick={() => {
+                setTab("preview");
+                requestPreviewContent();
+              }}
+              label="Preview"
+            />
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {output.length > 0 && (
+            <button
+              onClick={() => setOutput([])}
+              className="text-[11px] text-slate-600 hover:text-slate-400 transition-colors"
+            >
+              Clear
+            </button>
+          )}
+          {canRun && (
+            <button
+              onClick={handleRun}
+              disabled={running}
+              className="flex items-center gap-1.5 rounded-md bg-emerald-500/90 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed px-2.5 py-1 text-[11px] font-semibold text-white transition-colors"
+            >
+              {running ? (
+                <>
+                  <span className="h-2.5 w-2.5 animate-spin rounded-full border border-white/30 border-t-white" />
+                  Running
+                </>
+              ) : (
+                <>
+                  <span>▶</span>Run
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
