@@ -25,7 +25,7 @@ export default function OutputPanel({
   const isHtml = activeFileName.endsWith(".html");
   const { tree } = useFileStore();
 
-    // ── Socket listeners ───────────────────────────────
+  // ── Socket listeners ───────────────────────────────
   useEffect(() => {
     if (!socket) return;
 
@@ -59,7 +59,7 @@ export default function OutputPanel({
     };
   }, [socket]);
 
-   // Auto-scroll output
+  // Auto-scroll output
   useEffect(() => {
     if (outputRef.current)
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
@@ -84,7 +84,7 @@ export default function OutputPanel({
     );
   };
 
-    // Build preview HTML only when this panel needs it.
+  // Build preview HTML only when this panel needs it.
   useEffect(() => {
     requestPreviewContent();
 
@@ -107,7 +107,7 @@ export default function OutputPanel({
     };
   }, [activeFileId, activeFileName, isHtml, tab, tree]);
 
-   // ── Language detection ─────────────────────────────
+  // ── Language detection ─────────────────────────────
   const getLanguage = (name: string) => {
     const ext = name.split(".").pop()?.toLowerCase();
     const map: Record<string, string> = {
@@ -136,7 +136,7 @@ export default function OutputPanel({
     );
   };
 
-   // ── Render ─────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────
   return (
     <div className="flex h-full flex-col bg-[#0d1117]">
       {/* Tabs + Controls */}
@@ -187,3 +187,57 @@ export default function OutputPanel({
           )}
         </div>
       </div>
+
+      {/* Output tab */}
+      {tab === "output" && (
+        <div
+          ref={outputRef}
+          className="flex-1 overflow-y-auto p-3 font-mono text-xs leading-relaxed"
+        >
+          {running && (
+            <div className="flex items-center gap-2 text-sky-400">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-sky-400" />
+              Running {activeFileName}...
+            </div>
+          )}
+          {!running && output.length === 0 && (
+            <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
+              <span className="text-2xl">▶</span>
+              <p className="text-slate-600 text-[11px]">
+                {canRun
+                  ? `Click Run to execute ${activeFileName}`
+                  : "Open a runnable file to execute it"}
+              </p>
+            </div>
+          )}
+          {output.map((line, i) => (
+            <div
+              key={i}
+              className={
+                line.type === "stderr"
+                  ? "text-rose-400"
+                  : line.type === "info"
+                    ? "text-slate-600 mt-2 border-t border-white/[0.05] pt-2"
+                    : "text-slate-300"
+              }
+            >
+              {line.text}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Preview tab */}
+      {tab === "preview" && isHtml && (
+        <div className="flex-1 overflow-hidden bg-white">
+          <iframe
+            srcDoc={previewHtml}
+            className="h-full w-full border-none"
+            sandbox="allow-scripts"
+            title="HTML Preview"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
