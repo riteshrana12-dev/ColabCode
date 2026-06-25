@@ -106,3 +106,32 @@ export default function OutputPanel({
       );
     };
   }, [activeFileId, activeFileName, isHtml, tab, tree]);
+
+   // ── Language detection ─────────────────────────────
+  const getLanguage = (name: string) => {
+    const ext = name.split(".").pop()?.toLowerCase();
+    const map: Record<string, string> = {
+      js: "javascript",
+      ts: "typescript",
+      py: "python",
+      cpp: "cpp",
+      c: "c",
+      sh: "bash",
+      html: "html",
+      css: "css",
+      java: "java",
+    };
+    return map[ext || ""] || null;
+  };
+
+  const language = getLanguage(activeFileName);
+  const canRun = !!language;
+
+  const handleRun = () => {
+    if (!socket || !canRun || running) return;
+    window.dispatchEvent(
+      new CustomEvent("exec:get-content", {
+        detail: { fileName: activeFileName },
+      }),
+    );
+  };
