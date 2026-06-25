@@ -146,3 +146,28 @@ export function useWebRTC({
     });
     setCamOn((prev) => !prev);
   }, []);
+
+  // WebRTC signaling via Socket.io
+  useEffect(() => {
+    if (!socket) return;
+
+    // someone joined the call — initiate offer to them
+    socket.on(
+      "rtc:user-joined-call",
+      async ({ socketId, userId: uid, userName: uName, color }) => {
+        if (!localStreamRef.current) return;
+
+        const pc = createPeerConnection(socketId, uid, uName, color);
+
+        // add placeholder peer while connecting
+        setPeers((prev) => ({
+          ...prev,
+          [socketId]: { userId: uid, userName: uName, color, stream: null },
+        }));
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        socket.emit("rtc:offer", { roomId, targetSocketId: socketId, offer });
+      },
+    );
