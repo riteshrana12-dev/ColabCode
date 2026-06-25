@@ -202,3 +202,5 @@ function ControlBtn({
     </button>
   );
 }
+
+export default memo(VideoPanel);
