@@ -58,3 +58,9 @@ export default function OutputPanel({
       socket.off("exec:exit");
     };
   }, [socket]);
+
+   // Auto-scroll output
+  useEffect(() => {
+    if (outputRef.current)
+      outputRef.current.scrollTop = outputRef.current.scrollHeight;
+  }, [output]);
