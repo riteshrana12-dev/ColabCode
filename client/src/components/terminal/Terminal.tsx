@@ -25,4 +25,40 @@ export default function Terminal({ socket, roomId }: Props) {
   );
   const [tabs, setTabs] = useState<TerminalTab[]>([firstTerminal]);
   const [activeId, setActiveId] = useState(firstTerminal.id);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onReady = ({
+      terminalId,
+      cwd,
+    }: {
+      terminalId: string;
+      cwd: string;
+    }) => {
+      setTabs((current) =>
+        current.map((tab) => (tab.id === terminalId ? { ...tab, cwd } : tab)),
+      );
+    };
+
+    const onSynced = ({
+      terminalId,
+      cwd,
+    }: {
+      terminalId: string;
+      cwd: string;
+    }) => {
+      setTabs((current) =>
+        current.map((tab) => (tab.id === terminalId ? { ...tab, cwd } : tab)),
+      );
+    };
+
+    socket.on("terminal:ready", onReady);
+    socket.on("terminal:workspace-synced", onSynced);
+
+    return () => {
+      socket.off("terminal:ready", onReady);
+      socket.off("terminal:workspace-synced", onSynced);
+    };
+  }, [socket]);
 }
