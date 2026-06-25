@@ -82,4 +82,12 @@ export default function Terminal({ socket, roomId }: Props) {
       return next;
     });
   };
+
+  const syncWorkspace = () => {
+    if (!activeTab) return;
+    socket?.emit("terminal:sync-workspace", {
+      roomId,
+      terminalId: activeTab.id,
+    });
+  };
 }
