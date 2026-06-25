@@ -241,3 +241,50 @@ export default function OutputPanel({
     </div>
   );
 }
+
+// ── Inline CSS/JS into HTML for preview ──────────────────────────
+function buildInlinedHtml(
+  html: string,
+  currentFileId: string,
+  tree: FileNode[],
+): string {
+  const flatten = (
+    nodes: FileNode[],
+    parentId: string | null = null,
+  ): FileNode[] =>
+    nodes.flatMap((n) => [
+      { ...n, parentId },
+      ...(n.children ? flatten(n.children, n.id) : []),
+    ]);
+
+  const allFiles = flatten(tree);
+  const current = allFiles.find((f) => f.id === currentFileId);
+  const siblings = allFiles.filter(
+    (f) => f.type === "file" && f.parentId === current?.parentId,
+  );
+
+  const findSiblingByName = (name: string) => {
+    const clean = name.split("/").pop();
+    return siblings.find((f) => f.name === clean);
+  };
+
+  let result = html;
+
+  result = result.replace(
+    /<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi,
+    (match, href) => {
+      const file = findSiblingByName(href);
+      return file ? `<style>\n${file.content || ""}\n</style>` : match;
+    },
+  );
+
+  result = result.replace(
+    /<script[^>]+src=["']([^"']+\.js)["'][^>]*><\/script>/gi,
+    (match, src) => {
+      const file = findSiblingByName(src);
+      return file ? `<script>\n${file.content || ""}\n</script>` : match;
+    },
+  );
+
+  return result;
+}
