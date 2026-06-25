@@ -1,5 +1,6 @@
 import RoomGlyph from "./ui/RoomGlyph";
 import SmallBtn from "./SmallBtn";
+import type { Room } from "../../types";
 
 export default function RoomCard({
   room,
