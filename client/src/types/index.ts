@@ -35,3 +35,11 @@ export interface Tab {
   name: string;
   language: string;
 }
+
+export interface Room {
+  id: string; // unique identifier
+  name: string; // room name
+  inviteCode: string; // code used to join the room
+  creatorId: string; // user who created the room
+  createdAt: string; // timestamp of creation
+}
