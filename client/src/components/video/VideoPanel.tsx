@@ -81,3 +81,16 @@ function VideoPanel({ socket, roomId, userId, userName, userColor }: Props) {
       </div>
     );
   }
+
+   return (
+    <div className="flex h-full flex-col bg-[#080d18]">
+      {/* Header */}
+      <div className="flex h-9 shrink-0 items-center justify-between border-b border-white/[0.08] px-3">
+        <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
+          Live call
+        </span>
+        <span className="rounded-full bg-white/[0.06] border border-white/10 px-2 py-0.5 text-[10px] text-slate-500">
+          {participants.length}{" "}
+          {participants.length === 1 ? "person" : "people"}
+        </span>
+      </div>
