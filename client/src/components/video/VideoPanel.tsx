@@ -177,3 +177,28 @@ const VideoTile = memo(function VideoTile({
     </div>
   );
 });
+
+function ControlBtn({
+  onClick,
+  active,
+  activeIcon,
+  inactiveIcon,
+  label,
+}: {
+  onClick: () => void;
+  active: boolean;
+  activeIcon: ReactNode;
+  inactiveIcon: ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={label}
+      className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors
+        ${active ? "bg-white/10 hover:bg-white/15 text-white" : "bg-rose-500/20 hover:bg-rose-500/30 text-rose-300"}`}
+    >
+      {active ? activeIcon : inactiveIcon}
+    </button>
+  );
+}
