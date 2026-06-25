@@ -61,4 +61,25 @@ export default function Terminal({ socket, roomId }: Props) {
       socket.off("terminal:workspace-synced", onSynced);
     };
   }, [socket]);
+
+  const activeTab = tabs.find((tab) => tab.id === activeId) ?? tabs[0];
+
+  const addTerminal = () => {
+    const next: TerminalTab = {
+      id: createTerminalId(),
+      name: `Terminal ${tabs.length + 1}`,
+    };
+    setTabs((current) => [...current, next]);
+    setActiveId(next.id);
+  };
+
+  const closeTerminal = (terminalId: string) => {
+    socket?.emit("terminal:stop", { terminalId });
+    setTabs((current) => {
+      if (current.length === 1) return current;
+      const next = current.filter((tab) => tab.id !== terminalId);
+      if (activeId === terminalId) setActiveId(next[0].id);
+      return next;
+    });
+  };
 }
