@@ -210,3 +210,24 @@ export function useWebRTC({
         }
       }
     });
+
+    
+    // someone left the call
+    socket.on("rtc:user-left-call", ({ socketId }) => {
+      peerConnections.current[socketId]?.close();
+      delete peerConnections.current[socketId];
+      setPeers((prev) => {
+        const next = { ...prev };
+        delete next[socketId];
+        return next;
+      });
+    });
+
+    return () => {
+      socket.off("rtc:user-joined-call");
+      socket.off("rtc:offer");
+      socket.off("rtc:answer");
+      socket.off("rtc:ice-candidate");
+      socket.off("rtc:user-left-call");
+    };
+  }, [socket, createPeerConnection, roomId]);
