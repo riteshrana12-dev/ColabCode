@@ -115,3 +115,18 @@ export function useWebRTC({
       alert("Could not access camera/microphone. Check permissions.");
     }
   }, [socket, roomId, userName, userColor]);
+
+  const leaveCall = useCallback(() => {
+    // stop all tracks
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+    localStreamRef.current = null;
+    setLocalStream(null);
+
+    // close all peer connections
+    Object.values(peerConnections.current).forEach((pc) => pc.close());
+    peerConnections.current = {};
+    setPeers({});
+    setInCall(false);
+
+    socket?.emit("rtc:leave-call", { roomId });
+  }, [socket, roomId]);
