@@ -91,7 +91,6 @@ export default function Terminal({ socket, roomId }: Props) {
     });
   };
 
-
   return (
     <div className="h-full bg-[#0d1117] flex flex-col terminal-surface">
       <div className="flex items-center gap-1 border-b border-white/10 bg-[#111827] px-2 py-1.5">
@@ -137,4 +136,21 @@ export default function Terminal({ socket, roomId }: Props) {
           +
         </button>
       </div>
+      <div className="border-b border-white/10 px-3 py-1 text-[11px] text-slate-500">
+        cwd: {activeTab?.cwd ?? "starting room workspace..."}
+      </div>
+
+      <div className="relative flex-1 overflow-hidden">
+        {tabs.map((tab) => (
+          <TerminalSession
+            key={tab.id}
+            socket={socket}
+            roomId={roomId}
+            terminalId={tab.id}
+            visible={tab.id === activeId}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
