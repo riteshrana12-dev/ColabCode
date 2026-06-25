@@ -17,3 +17,12 @@ interface TerminalTab {
 
 const createTerminalId = () =>
   `term-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+export default function Terminal({ socket, roomId }: Props) {
+  const firstTerminal = useMemo<TerminalTab>(
+    () => ({ id: createTerminalId(), name: "Terminal 1" }),
+    [],
+  );
+  const [tabs, setTabs] = useState<TerminalTab[]>([firstTerminal]);
+  const [activeId, setActiveId] = useState(firstTerminal.id);
+}
