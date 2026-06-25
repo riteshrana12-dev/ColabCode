@@ -36,3 +36,61 @@ export function useWebRTC({
 
   const peerConnections = useRef<Record<string, RTCPeerConnection>>({});
   const localStreamRef = useRef<MediaStream | null>(null);
+
+  const createPeerConnection = useCallback(
+    (
+      targetSocketId: string,
+      targetUserId: string,
+      targetUserName: string,
+      targetColor: string,
+    ) => {
+      const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+
+      // add local tracks to connection
+      localStreamRef.current?.getTracks().forEach((track) => {
+        pc.addTrack(track, localStreamRef.current!);
+      });
+
+      // send ICE candidates to target
+      pc.onicecandidate = (e) => {
+        if (e.candidate && socket) {
+          socket.emit("rtc:ice-candidate", {
+            targetSocketId,
+            candidate: e.candidate,
+          });
+        }
+      };
+
+      // receive remote stream
+      pc.ontrack = (e) => {
+        const stream = e.streams[0];
+        setPeers((prev) => ({
+          ...prev,
+          [targetSocketId]: {
+            userId: targetUserId,
+            userName: targetUserName,
+            color: targetColor,
+            stream,
+          },
+        }));
+      };
+
+      pc.onconnectionstatechange = () => {
+        if (
+          pc.connectionState === "disconnected" ||
+          pc.connectionState === "failed"
+        ) {
+          setPeers((prev) => {
+            const next = { ...prev };
+            delete next[targetSocketId];
+            return next;
+          });
+          delete peerConnections.current[targetSocketId];
+        }
+      };
+
+      peerConnections.current[targetSocketId] = pc;
+      return pc;
+    },
+    [socket],
+  );
