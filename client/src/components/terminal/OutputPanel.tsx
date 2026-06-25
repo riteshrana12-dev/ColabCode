@@ -64,3 +64,22 @@ export default function OutputPanel({
     if (outputRef.current)
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
   }, [output]);
+
+  const requestPreviewContent = () => {
+    if (!isHtml || !activeFileId) {
+      setPreviewHtml("");
+      return;
+    }
+
+    window.dispatchEvent(
+      new CustomEvent("editor:get-content", {
+        detail: {
+          fileId: activeFileId,
+          fileName: activeFileName,
+          onContent: (content: string) => {
+            setPreviewHtml(buildInlinedHtml(content, activeFileId, tree));
+          },
+        },
+      }),
+    );
+  };
