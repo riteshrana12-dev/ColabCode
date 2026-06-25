@@ -83,3 +83,26 @@ export default function OutputPanel({
       }),
     );
   };
+
+    // Build preview HTML only when this panel needs it.
+  useEffect(() => {
+    requestPreviewContent();
+
+    const onEditorContentChanged = (event: Event) => {
+      const detail = (event as CustomEvent).detail as {
+        fileId: string;
+        content: string;
+      };
+      if (tab === "preview" && detail.fileId === activeFileId) {
+        setPreviewHtml(buildInlinedHtml(detail.content, activeFileId, tree));
+      }
+    };
+
+    window.addEventListener("editor:content-changed", onEditorContentChanged);
+    return () => {
+      window.removeEventListener(
+        "editor:content-changed",
+        onEditorContentChanged,
+      );
+    };
+  }, [activeFileId, activeFileName, isHtml, tab, tree]);
