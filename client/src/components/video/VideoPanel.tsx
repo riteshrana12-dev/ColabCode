@@ -27,3 +27,25 @@ function VideoPanel({ socket, roomId, userId, userName, userColor }: Props) {
     toggleMic,
     toggleCam,
   } = useWebRTC({ socket, roomId, userId, userName, userColor });
+
+   const participants = useMemo(
+    () => [
+      {
+        id: "local",
+        stream: localStream,
+        label: `${userName} (you)`,
+        color: userColor,
+        muted: true,
+        camOn,
+      },
+      ...Object.entries(peers).map(([socketId, peer]) => ({
+        id: socketId,
+        stream: peer.stream,
+        label: peer.userName,
+        color: peer.color,
+        muted: false,
+        camOn: !!peer.stream,
+      })),
+    ],
+    [camOn, localStream, peers, userColor, userName],
+  );
