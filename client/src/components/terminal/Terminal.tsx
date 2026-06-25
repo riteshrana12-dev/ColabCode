@@ -154,3 +154,50 @@ export default function Terminal({ socket, roomId }: Props) {
     </div>
   );
 }
+
+
+function TerminalSession({
+  socket,
+  roomId,
+  terminalId,
+  visible,
+}: {
+  socket: Socket | null;
+  roomId: string;
+  terminalId: string;
+  visible: boolean;
+}) {
+  const termRef = useRef<HTMLDivElement>(null);
+  const xtermRef = useRef<XTerm | null>(null);
+  const fitAddonRef = useRef<FitAddon | null>(null);
+
+  useEffect(() => {
+    if (!termRef.current || !socket) return;
+
+    const xterm = new XTerm({
+      theme: {
+        background: "#0d1117",
+        foreground: "#d6deeb",
+        cursor: "#58a6ff",
+        selectionBackground: "#2f81f755",
+        black: "#0d1117",
+        blue: "#58a6ff",
+        green: "#3fb950",
+        red: "#f85149",
+        yellow: "#d29922",
+      },
+      fontSize: 13,
+      fontFamily: "JetBrains Mono, Fira Code, Consolas, monospace",
+      cursorBlink: true,
+      scrollback: 4000,
+    });
+
+    const fitAddon = new FitAddon();
+    xterm.loadAddon(fitAddon);
+    xterm.open(termRef.current);
+    fitAddon.fit();
+
+    xtermRef.current = xterm;
+    fitAddonRef.current = fitAddon;
+
+    socket.emit("terminal:start", { roomId, terminalId });
