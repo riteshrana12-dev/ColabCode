@@ -1,4 +1,3 @@
-    
 import { useEffect, useRef, useCallback } from "react";
 import * as Y from "yjs";
 import { MonacoBinding } from "y-monaco";
@@ -124,3 +123,28 @@ export function useCollabEditor({
     },
     [socket, roomId, fileId, userId, userName, userColor],
   );
+
+  // cleanup when switching files or unmounting
+  const destroy = useCallback(() => {
+    bindingRef.current?.destroy();
+    awarenessRef.current?.destroy();
+    ydocRef.current?.destroy();
+
+    if (socket) {
+      socket.off("yjs:update");
+      socket.off("yjs:sync-request");
+      socket.off("yjs:sync-response");
+    }
+
+    bindingRef.current = null;
+    awarenessRef.current = null;
+    ydocRef.current = null;
+  }, [socket]);
+
+  // destroy on unmount
+  useEffect(() => {
+    return () => destroy();
+  }, [destroy]);
+
+  return { bindEditor, destroy };
+}
