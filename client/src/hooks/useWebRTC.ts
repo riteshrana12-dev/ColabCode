@@ -130,3 +130,19 @@ export function useWebRTC({
 
     socket?.emit("rtc:leave-call", { roomId });
   }, [socket, roomId]);
+
+  const toggleMic = useCallback(() => {
+    if (!localStreamRef.current) return;
+    localStreamRef.current.getAudioTracks().forEach((t) => {
+      t.enabled = !t.enabled;
+    });
+    setMicOn((prev) => !prev);
+  }, []);
+
+  const toggleCam = useCallback(() => {
+    if (!localStreamRef.current) return;
+    localStreamRef.current.getVideoTracks().forEach((t) => {
+      t.enabled = !t.enabled;
+    });
+    setCamOn((prev) => !prev);
+  }, []);
