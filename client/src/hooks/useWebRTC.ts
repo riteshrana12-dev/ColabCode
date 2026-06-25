@@ -171,3 +171,42 @@ export function useWebRTC({
         socket.emit("rtc:offer", { roomId, targetSocketId: socketId, offer });
       },
     );
+
+    // received offer — send answer
+    socket.on(
+      "rtc:offer",
+      async ({ offer, fromSocketId, userId: uid, userName: uName, color }) => {
+        if (!localStreamRef.current) return;
+
+        const pc = createPeerConnection(fromSocketId, uid, uName, color);
+
+        setPeers((prev) => ({
+          ...prev,
+          [fromSocketId]: { userId: uid, userName: uName, color, stream: null },
+        }));
+
+        await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+
+        socket.emit("rtc:answer", { targetSocketId: fromSocketId, answer });
+      },
+    );
+
+    // received answer
+    socket.on("rtc:answer", async ({ answer, fromSocketId }) => {
+      const pc = peerConnections.current[fromSocketId];
+      if (pc) await pc.setRemoteDescription(new RTCSessionDescription(answer));
+    });
+
+    // received ICE candidate
+    socket.on("rtc:ice-candidate", async ({ candidate, fromSocketId }) => {
+      const pc = peerConnections.current[fromSocketId];
+      if (pc && candidate) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch (e) {
+          console.error("ICE candidate error:", e);
+        }
+      }
+    });
