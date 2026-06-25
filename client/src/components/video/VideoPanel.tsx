@@ -128,3 +128,52 @@ function VideoPanel({ socket, roomId, userId, userName, userColor }: Props) {
     </div>
   );
 }
+
+const VideoTile = memo(function VideoTile({
+  stream,
+  label,
+  color,
+  muted,
+  camOn,
+}: {
+  stream: MediaStream | null;
+  label: string;
+  color: string;
+  muted: boolean;
+  camOn: boolean;
+}) {
+  // ref callback — runs every time the video element mounts/unmounts
+  const setVideoRef = (el: HTMLVideoElement | null) => {
+    if (el && stream) {
+      el.srcObject = stream;
+    }
+  };
+
+  return (
+    <div className="relative min-h-0 overflow-hidden rounded-xl border border-white/[0.08] bg-[#0d1324]">
+      {camOn && stream ? (
+        <video
+          ref={setVideoRef}
+          autoPlay
+          playsInline
+          muted={muted}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center">
+          <div
+            className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white shadow-lg"
+            style={{ backgroundColor: color }}
+          >
+            {label[0]?.toUpperCase()}
+          </div>
+        </div>
+      )}
+      <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
+        <span className="rounded-md bg-black/60 px-2 py-0.5 text-[11px] text-white backdrop-blur-sm">
+          {label}
+        </span>
+      </div>
+    </div>
+  );
+});
