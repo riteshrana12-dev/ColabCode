@@ -155,7 +155,6 @@ export default function Terminal({ socket, roomId }: Props) {
   );
 }
 
-
 function TerminalSession({
   socket,
   roomId,
@@ -201,3 +200,52 @@ function TerminalSession({
     fitAddonRef.current = fitAddon;
 
     socket.emit("terminal:start", { roomId, terminalId });
+
+    const onOutput = ({
+      terminalId: outputTerminalId,
+      data,
+    }: {
+      terminalId: string;
+      data: string;
+    }) => {
+      if (outputTerminalId === terminalId) xterm.write(data);
+    };
+
+    socket.on("terminal:output", onOutput);
+
+    const disposable = xterm.onData((data) => {
+      socket.emit("terminal:input", { terminalId, data });
+    });
+
+    const resizeObserver = new ResizeObserver(() => {
+      fitAddon.fit();
+      socket.emit("terminal:resize", {
+        terminalId,
+        cols: xterm.cols,
+        rows: xterm.rows,
+      });
+    });
+    resizeObserver.observe(termRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      disposable.dispose();
+      socket.off("terminal:output", onOutput);
+      socket.emit("terminal:stop", { terminalId });
+      xterm.dispose();
+    };
+  }, [socket, roomId, terminalId]);
+
+  useEffect(() => {
+    if (visible) {
+      setTimeout(() => fitAddonRef.current?.fit(), 0);
+    }
+  }, [visible]);
+
+  return (
+    <div
+      className={`absolute inset-0 p-2 ${visible ? "block" : "hidden"}`}
+      ref={termRef}
+    />
+  );
+}
