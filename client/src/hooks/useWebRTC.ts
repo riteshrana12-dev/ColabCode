@@ -211,7 +211,6 @@ export function useWebRTC({
       }
     });
 
-    
     // someone left the call
     socket.on("rtc:user-left-call", ({ socketId }) => {
       peerConnections.current[socketId]?.close();
@@ -231,3 +230,23 @@ export function useWebRTC({
       socket.off("rtc:user-left-call");
     };
   }, [socket, createPeerConnection, roomId]);
+
+  // cleanup on unmount
+  useEffect(() => {
+    return () => {
+      leaveCall();
+    };
+  }, []);
+
+  return {
+    localStream,
+    peers,
+    micOn,
+    camOn,
+    inCall,
+    joinCall,
+    leaveCall,
+    toggleMic,
+    toggleCam,
+  };
+}
