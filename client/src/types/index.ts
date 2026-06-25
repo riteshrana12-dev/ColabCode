@@ -37,9 +37,9 @@ export interface Tab {
 }
 
 export interface Room {
-  id: string; // unique identifier
-  name: string; // room name
-  inviteCode: string; // code used to join the room
-  creatorId: string; // user who created the room
-  createdAt: string; // timestamp of creation
+  id: string;
+  name: string;
+  inviteCode: string;
+  creatorId: string;
+  createdAt: string;
 }
