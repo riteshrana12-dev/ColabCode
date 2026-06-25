@@ -21,3 +21,18 @@ const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
 ];
+
+export function useWebRTC({
+  socket,
+  roomId,
+  userName,
+  userColor,
+}: UseWebRTCProps) {
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [peers, setPeers] = useState<Record<string, Peer>>({});
+  const [micOn, setMicOn] = useState(true);
+  const [camOn, setCamOn] = useState(true);
+  const [inCall, setInCall] = useState(false);
+
+  const peerConnections = useRef<Record<string, RTCPeerConnection>>({});
+  const localStreamRef = useRef<MediaStream | null>(null);
