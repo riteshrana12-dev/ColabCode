@@ -28,7 +28,7 @@ function VideoPanel({ socket, roomId, userId, userName, userColor }: Props) {
     toggleCam,
   } = useWebRTC({ socket, roomId, userId, userName, userColor });
 
-   const participants = useMemo(
+  const participants = useMemo(
     () => [
       {
         id: "local",
@@ -82,7 +82,7 @@ function VideoPanel({ socket, roomId, userId, userName, userColor }: Props) {
     );
   }
 
-   return (
+  return (
     <div className="flex h-full flex-col bg-[#080d18]">
       {/* Header */}
       <div className="flex h-9 shrink-0 items-center justify-between border-b border-white/[0.08] px-3">
@@ -100,3 +100,31 @@ function VideoPanel({ socket, roomId, userId, userName, userColor }: Props) {
           <VideoTile key={p.id} {...p} />
         ))}
       </div>
+
+      {/* Controls */}
+      <div className="flex h-11 shrink-0 items-center justify-center gap-2 border-t border-white/[0.08] px-3">
+        <ControlBtn
+          onClick={toggleMic}
+          active={micOn}
+          activeIcon={<MicIcon />}
+          inactiveIcon={<MicOffIcon />}
+          label={micOn ? "Mute" : "Unmute"}
+        />
+        <ControlBtn
+          onClick={toggleCam}
+          active={camOn}
+          activeIcon={<CamIcon />}
+          inactiveIcon={<CamOffIcon />}
+          label={camOn ? "Stop video" : "Start video"}
+        />
+        <button
+          onClick={leaveCall}
+          className="flex h-8 items-center gap-1.5 rounded-lg bg-rose-500/90 hover:bg-rose-500 px-3 text-xs font-medium text-white transition-colors"
+        >
+          <PhoneOffIcon />
+          Leave
+        </button>
+      </div>
+    </div>
+  );
+}
