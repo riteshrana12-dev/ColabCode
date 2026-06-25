@@ -95,6 +95,7 @@ function VideoPanel({ socket, roomId, userId, userName, userColor }: Props) {
         </span>
       </div>
 
+      {/* Video grid — fills available space, no scroll */}
       <div className="grid grid-flow-col grid-rows-3 flex-1 gap-1.5 p-1.5 min-h-0">
         {participants.map((p) => (
           <VideoTile key={p.id} {...p} />
