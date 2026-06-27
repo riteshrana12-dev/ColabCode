@@ -73,22 +73,48 @@ ColabCode is a real-time collaborative coding platform built for technical inter
 
 The client connects to a single Express + Socket.io server over WebSocket, authenticated at the handshake via JWT. Collaborative editing is handled by Yjs — each file has its own CRDT document that accumulates updates in memory and debounces saves to Postgres every 2 seconds, so late joiners always receive the full document state. Redis serves three roles: session storage, Socket.io pub/sub adapter (enabling horizontal scaling across multiple server instances), and room presence tracking via hash sets. Code execution spawns throwaway Docker containers with network access disabled and memory/CPU hard-capped, so user code is fully isolated from the host process. WebRTC video uses Socket.io as the signaling channel for SDP offer/answer and ICE candidate exchange, establishing direct peer-to-peer media streams.
 
-```
-Browser A                    Server                      Browser B
-─────────────────────────────────────────────────────────────────
-Monaco + Yjs  ──yjs:update──► relay ──yjs:update──►  Monaco + Yjs
-              ◄──yjs:update──        ◄──yjs:update──
-              
-WebRTC        ──rtc:offer───► relay ──rtc:offer───►   WebRTC
-              ◄──rtc:answer──        ◄──rtc:answer──
-              (direct P2P media stream after handshake)
+```mermaid
+graph TD
+    %% Subgraph Styles
+    classDef client fill:#d4ebf2,stroke:#1a73e8,stroke-width:2px;
+    classDef server fill:#ffe0b2,stroke:#f57c00,stroke-width:2px;
+    classDef isolated fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px;
 
-Terminal      ──terminal:input► PTY ──terminal:output►  xterm.js
+    %% Nodes Configuration
+    subgraph Clients [Browser Clients]
+        A[Browser A<br>Monaco + Yjs]:::client
+        B[Browser B<br>Monaco + Yjs]:::client
+        A_RTC[WebRTC]:::client
+        B_RTC[WebRTC]:::client
+        Term[xterm.js]:::client
+        UI[Run Button]:::client
+        Out[Output Panel]:::client
+    end
 
-Run button    ──exec:run──────► Docker container ──exec:stdout►  Output panel
-                                (isolated, ephemeral)
-```
+    subgraph Central_Server [Backend Relay Server]
+        Relay[Relay Server]:::server
+        PTY[PTY Process]:::server
+    end
 
+    subgraph Sandbox [Execution Layer]
+        Docker[Docker Container<br>Isolated & Ephemeral]:::isolated
+    end
+
+    %% Data Flows
+    A -->|yjs:update| Relay
+    Relay -->|yjs:update| B
+    B -->|yjs:update| Relay
+    Relay -->|yjs:update| A
+
+    A_RTC -->|rtc:offer / rtc:answer| Relay
+    Relay -->|rtc:offer / rtc:answer| B_RTC
+    A_RTC <==>|Direct P2P Media Stream| B_RTC
+
+    Term -->|terminal:input| PTY
+    PTY -->|terminal:output| Term
+
+    UI -->|exec:run| Docker
+    Docker -->|exec:stdout| Out
 ---
 
 ## Local setup
