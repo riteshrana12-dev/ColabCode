@@ -18,13 +18,12 @@ const DOCKER_IMAGE = "colab-runner";
 // build the runner image once on startup
 export const buildRunnerImage = async () => {
   const dockerfile = `
-FROM ubuntu:22.04
-RUN apt-get update && apt-get install -y \\
-    nodejs npm python3 python3-pip g++ bash \\
-    --no-install-recommends && rm -rf /var/lib/apt/lists/*
+FROM node:20-alpine
+RUN apk add --no-cache python3 py3-pip g++ bash
 RUN npm install -g typescript ts-node
 WORKDIR /code
 `;
+
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "colab-docker-"));
   fs.writeFileSync(path.join(tmpDir, "Dockerfile"), dockerfile);
 
