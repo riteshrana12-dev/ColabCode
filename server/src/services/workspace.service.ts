@@ -3,6 +3,7 @@ import * as os from "os";
 import * as path from "path";
 import client from "../config/db";
 import { getRoomForUser } from "./access.service";
+import type { File } from "../types";
 
 const WORKSPACE_ROOT = path.join(os.tmpdir(), "collabcode-workspaces");
 
@@ -10,8 +11,10 @@ function safeSegment(value: string) {
   return value.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_").trim() || "untitled";
 }
 
-function buildPathById(files: Awaited<ReturnType<typeof client.file.findMany>>) {
-  const byId = new Map(files.map((file) => [file.id, file]));
+function buildPathById(
+  files: Awaited<ReturnType<typeof client.file.findMany>>,
+) {
+  const byId = new Map(files.map((file: File) => [file.id, file]));
   const cache = new Map<string, string>();
 
   const getPath = (fileId: string): string => {

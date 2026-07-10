@@ -1,5 +1,6 @@
 import client from "../config/db";
 import { Request, Response } from "express";
+import { Membership } from "../types";
 
 const createRoom = async (req: Request, res: Response) => {
   const { roomName } = req.body;
@@ -240,7 +241,7 @@ const getMyRooms = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       createdRooms: user?.createdRooms || [],
-      joinedRooms: user?.memberships.map((m) => m.room) || [],
+      joinedRooms: user?.memberships.map((m: Membership) => m.room) || [],
     });
   } catch (error: any) {
     return res.status(500).json({ message: "Internal Server Error" });

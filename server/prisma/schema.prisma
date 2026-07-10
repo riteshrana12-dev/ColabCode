@@ -79,7 +79,7 @@ model File{
   yjsState Bytes? 
   language String @default("plaintext")
   createdAt DateTime @default(now())
-  upadatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   roomId String
   room Room @relation(fields: [roomId],references: [id], onDelete: Cascade)
