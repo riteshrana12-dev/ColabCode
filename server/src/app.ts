@@ -13,7 +13,7 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend dev server
+    origin: process.env.CLIENT_URL, // your frontend dev server
     credentials: true, // allow cookies/authorization headers
   }),
 );
