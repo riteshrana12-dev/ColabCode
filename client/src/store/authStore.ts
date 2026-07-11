@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type { User } from "../types/index";
 
 interface AuthState {
@@ -12,32 +11,18 @@ interface AuthState {
   deleteAccount: () => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      user: null,
-      accessToken: null,
-      isAuthenticated: false,
+export const useAuthStore = create<AuthState>()((set) => ({
+  user: null,
+  accessToken: null,
+  isAuthenticated: false,
 
-      setAuth: (user, accessToken) =>
-        set({ user, accessToken, isAuthenticated: true }),
+  setAuth: (user, accessToken) =>
+    set({ user, accessToken, isAuthenticated: true }),
 
-      setAccessToken: (accessToken) => set({ accessToken }),
+  setAccessToken: (accessToken) => set({ accessToken }),
 
-      logout: () =>
-        set({ user: null, accessToken: null, isAuthenticated: false }),
+  logout: () => set({ user: null, accessToken: null, isAuthenticated: false }),
 
-      deleteAccount: () =>
-        set({ user: null, accessToken: null, isAuthenticated: false }),
-    }),
-    {
-      name: "auth-storage",
-
-      partialize: (state) => ({
-        user: state.user,
-        accessToken: state.accessToken,
-        isAuthenticated: state.isAuthenticated,
-      }),
-    },
-  ),
-);
+  deleteAccount: () =>
+    set({ user: null, accessToken: null, isAuthenticated: false }),
+}));
