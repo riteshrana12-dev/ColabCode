@@ -7,27 +7,15 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not defined in environment variables");
 }
 
-if (!process.env.GOOGLE_CLIENT_ID) {
+if (!process.env.SMTP_PASS) {
   throw new Error(
-    "GOOGLE_CLIENT_ID is defined in environment variables, but it is not used in this file",
+    "SMTP_PASSWORD is defined in environment variables, but it is not used in this file",
   );
 }
 
-if (!process.env.GOOGLE_CLIENT_SECRET) {
+if (!process.env.SMTP_USER) {
   throw new Error(
-    "GOOGLE_CLIENT_SECRET is defined in environment variables, but it is not used in this file",
-  );
-}
-
-if (!process.env.REFRESH_TOKEN_G) {
-  throw new Error(
-    "REFRESH_TOKEN_SECRET is defined in environment variables, but it is not used in this file",
-  );
-}
-
-if (!process.env.GOOGLE_USER) {
-  throw new Error(
-    "GOOGLE_USER is defined in environment variables, but it is not used in this file",
+    "SMYP_USER is defined in environment variables, but it is not used in this file",
   );
 }
 
