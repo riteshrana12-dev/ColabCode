@@ -16,16 +16,41 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// if 401, try refresh then retry original request
+const AUTH_ROUTES = [
+  "/auth/signin",
+  "/auth/signup",
+  "/auth/refreshtoken",
+  "/auth/verifyEmail",
+];
+
+const isAuthRoute = (url: string) =>
+  AUTH_ROUTES.some((route) => url.includes(route));
+
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    const status = error.response?.status;
+
+    // if 401 on an auth route — just show the error, never try refresh
+    if (status === 401 && isAuthRoute(original.url)) {
+      const message =
+        error.response?.data?.message ||
+        "Invalid credentials. Please try again.";
+      useToastStore.getState().pushToast({
+        type: "warning",
+        title: "Authentication failed",
+        message,
+      });
+      return Promise.reject(error);
+    }
+
+    // if 401 on a protected route — try refresh once
+    if (status === 401 && !original._retry) {
       original._retry = true;
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/auth/refreshtoken`,
+          `${import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1"}/auth/refreshtoken`,
           {
             withCredentials: true,
           },
@@ -45,7 +70,6 @@ api.interceptors.response.use(
       }
     }
 
-    const status = error.response?.status;
     const message =
       error.response?.data?.message ||
       error.message ||
