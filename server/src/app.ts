@@ -22,6 +22,7 @@ app.use(
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
+app.set("trust proxy", 1); // trust first proxy (for secure cookies behind a reverse proxy)
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/room", roomRouter);
